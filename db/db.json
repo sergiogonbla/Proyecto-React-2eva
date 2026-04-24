@@ -255,6 +255,18 @@
   "users": [
     {
       "id": 1,
+      "nombre": "Sergio",
+      "email": "sergio@educastur.org",
+      "password": "$2y$10$784LbaPH6l3enHaXhkx9V.rh6rUuO4XcqXzpQrD3t0HJPpVgBpA0O",
+      "rol": {
+        "id": 1,
+        "nombre_rol": "comun",
+        "descripcion": "Usuario regular del sistema"
+      },
+      "fecha_registro": "2025-10-21"
+    },
+    {
+      "id": 1,
       "nombre": "Ana",
       "email": "ana.lopez@educastur.org",
       "password": "$2y$10$paOaxwKhEBC4W/cVeG85puc9W/hoMlzquXQ/6hrMD6VdqIc/mEToq",

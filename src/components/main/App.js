@@ -1,45 +1,66 @@
-import fondo from '../imagenes/fondo.jpg'; 
+import fondo from '../imagenes/fondo.jpg'; 
 import MiLista from '../lista/MiLista';
 import Header from '../header/Header.js';
 import Footer from '../footer/Footer.js';
 import React, { useState, useEffect } from 'react';
 import Form from './Form.js';
+import Login from '../login/Login.js';
+import './App.css';
 
 function App() {
 
     const INCIDENCIA_API_URL = 'http://localhost:3004/incidencias';
     const USUARIO_API_URL = 'http://localhost:3004/users';
+    const LOGIN_URL = 'http://localhost:3004/login';
 
     const [usuarios, setUsuarios] = useState([]);
     const [incidencias, setIncidencias] = useState([]);
+    const [usuarioLogin, setUsuarioLogin] = useState(null);
 
-    useEffect(() => {
-
-    const obtenerIncidencias = async () => {
+    const inicioSesion = async (email, password) => {
         try {
-            let response = await fetch(INCIDENCIA_API_URL);
-        if (!response.ok) {
-                throw new Error("HTTP Error");
+            let respuesta = await fetch(LOGIN_URL, {
+                method: "POST",
+                headers: { 'Content-Type': "application/json" },
+                body: JSON.stringify({ "email": email, "password": password })
+            });
+            if (respuesta.ok) {
+                let data = await respuesta.json();
+                setUsuarioLogin(data.user);
+                localStorage.setItem("usuarioLogin", JSON.stringify(data.user));
+            } else {
+                alert("No se puede iniciar sesión");
             }
-            const data = await response.json();
-            console.log(data);
-            setIncidencias(data);
         } catch (e) {
-            console.error("Error al cargar las incidencias:", e);
+            console.error("Error en el login:", e);
         }
     };
 
-    const obtenerUsuarios = async () => {
-        try {
-            let response = await fetch(USUARIO_API_URL);
-                if (!response.ok) {
-                    throw new Error("HTTP Error");
-            }
+    useEffect(() => {
+        let usuarioGuardado = JSON.parse(localStorage.getItem("usuarioLogin"));
+        if (usuarioGuardado) {
+            setUsuarioLogin(usuarioGuardado);
+        }
+
+        const obtenerIncidencias = async () => {
+            try {
+                let response = await fetch(INCIDENCIA_API_URL);
+                if (!response.ok) throw new Error("HTTP Error");
                 const data = await response.json();
-                console.log(data);
-                 setUsuarios(data);
+                setIncidencias(data);
             } catch (e) {
-                 console.error("Error al cargar los usuarios:", e);
+                console.error("Error al cargar las incidencias:", e);
+            }
+        };
+
+        const obtenerUsuarios = async () => {
+            try {
+                let response = await fetch(USUARIO_API_URL);
+                if (!response.ok) throw new Error("HTTP Error");
+                const data = await response.json();
+                setUsuarios(data);
+            } catch (e) {
+                console.error("Error al cargar los usuarios:", e);
             }
         };
 
@@ -58,28 +79,15 @@ function App() {
     ) => {
 
         const fecha = new Date();
-         const year = fecha.getFullYear();
-        const mes = fecha.getMonth() + 1;
-        const dia = fecha.getDate();
-        const fecha_formateada = `${year}-${mes}-${dia}`;
+        const fecha_formateada = `${fecha.getFullYear()}-${fecha.getMonth() + 1}-${fecha.getDate()}`;
 
-        let usuarioCompleto = null;
-        const inputEmail = usuario_input.email ? usuario_input.email.toLowerCase().trim() : '';
+        let usuarioCompleto = usuarios.find(u => 
+            u.email && u.email.toLowerCase() === (usuario_input.email ? usuario_input.email.toLowerCase().trim() : '')
+        );
 
-        if (inputEmail) {
-            usuarioCompleto = usuarios.find(u => 
-                u.email && u.email.toLowerCase() === inputEmail
-            );
-        }
-
-        let usuario_para_guardar;
-        if (usuarioCompleto) {
-         usuario_para_guardar = usuarioCompleto;
-        }
-        
         const nueva_incidencia = {
             id: incidencias.length + 1,
-            usuario: usuario_para_guardar, 
+            usuario: usuarioCompleto || usuarioLogin, 
             titulo: titulo_nuevo,
             descripcion: descripcion_nuevo,
             categoria: categoria_nuevo,
@@ -89,24 +97,36 @@ function App() {
             estado: "Abierto"
         };
 
-    setIncidencias([...incidencias, nueva_incidencia]);
+        setIncidencias([...incidencias, nueva_incidencia]);
     };
 
     return (
         <div className='card' style={{ backgroundImage: `url(${fondo})`, backgroundSize: "cover", backgroundRepeat: "no-repeat"}}>
             <Header />
-            <div className="container d-flex">
-                 <div className="col-6">
-                 <MiLista incidencias={incidencias} />
-                </div>
-                <div className="col-5 offset-1"> 
-                <Form agregarincidencia={agregarincidencia} />
+            
+            {usuarioLogin === null ? (
+                <Login inicioSesion={inicioSesion} />
+            ) : (
+                <div className="container-fluid">
+                <div className="row">
+                    <div className="col-7">
+                        <MiLista incidencias={incidencias} />
+                        <button className="btn btn-danger btn-sm mt-2" onClick={() => {
+                            localStorage.removeItem("usuarioLogin");
+                            setUsuarioLogin(null);
+                        }}>Cerrar sesión</button>
+                    </div>
+                    
+                    <div className="col-5"> 
+                        <Form agregarincidencia={agregarincidencia} />
+                    </div>
                 </div>
             </div>
+        )}
 
-        <Footer />
-    </div>
-  );
+            <Footer />
+        </div>
+    );
 }
 
 export default App;
