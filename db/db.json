@@ -308,7 +308,7 @@
       "password": "$2y$10$gU1byqj/EyDQbUIFaV1b0.vKiCkE3oZZ1BxfVCSxO7z8Y/QIhqmo6",
       "rol": {
         "id": 1,
-        "nombre_rol": "comun",
+        "nombre_rol": "admin",
         "descripcion": "Usuario regular del sistema"
       },
       "fecha_registro": "2025-10-21"

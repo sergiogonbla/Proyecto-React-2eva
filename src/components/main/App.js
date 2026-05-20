@@ -2,10 +2,13 @@ import fondo from '../imagenes/fondo.jpg';
 import MiLista from '../lista/MiLista';
 import Header from '../header/Header.js';
 import Footer from '../footer/Footer.js';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext } from 'react';
 import Form from './Form.js';
+import { BrowserRouter, Routes, Route, Link, useNavigate} from "react-router-dom";
 import Login from '../login/Login.js';
 import './App.css';
+import Menu from '../../Menu.js';
+import GestionUsuarios from '../GestionUsuarios.js';
 
 function App() {
 
@@ -34,6 +37,11 @@ function App() {
         } catch (e) {
             console.error("Error en el login:", e);
         }
+    };
+
+    const cerrarSesion = () => {
+        localStorage.removeItem("usuarioLogin");
+        setUsuarioLogin(null);
     };
 
     useEffect(() => {
@@ -110,17 +118,23 @@ function App() {
                 <div className="container-fluid">
                 <div className="row">
                     <div className="col-7">
-                        <MiLista incidencias={incidencias} />
+
                         <button className="btn btn-danger btn-sm mt-2" onClick={() => {
                             localStorage.removeItem("usuarioLogin");
                             setUsuarioLogin(null);
                         }}>Cerrar sesión</button>
                     </div>
                     
-                    <div className="col-5"> 
-                        <Form agregarincidencia={agregarincidencia} />
-                    </div>
+
                 </div>
+
+            <Routes>
+                <Route path="/" element={<p>Pantalla de inicio</p>} />
+                <Route path="/Verincidencias" element={< MiLista incidencias ={incidencias}/>} />
+                <Route path="/Registrarincidencias" element={<Form agregarincidencia={agregarincidencia}/>} />
+                <Route path="/Gestionusuarios" element={<GestionUsuarios usuarios={usuarios} />} />
+            </Routes>
+                <Menu usuarioLogin={usuarioLogin}></Menu>
             </div>
         )}
 
